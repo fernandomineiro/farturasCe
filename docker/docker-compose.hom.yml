@@ -1,0 +1,20 @@
+version: '3.3'
+
+services:
+  nscfaturas:
+    volumes: 
+      - vol-fatura:/logs 
+    deploy:
+        resources:
+            limits:
+              cpus: 2.00
+              memory: 4096M
+      
+volumes:
+  vol-fatura:
+    driver_opts: 
+      type: "nfs"
+      o: "addr=hom-nfs-siscom.sistemas.cesan.com.br,nolock,soft,rw"
+      device: ":/nfs/nsc/fatura/logs"
+
+

@@ -1,0 +1,19 @@
+package moduloFaturamento.service;
+
+import moduloFaturamento.dto.GenericoWrapperDTO;
+import moduloFaturamento.dto.cronogramaFaturaCicloFaturamento.CronogramaFaturaCicloFaturamentoFilterDTO;
+import moduloFaturamento.dto.cronogramaFaturaCicloFaturamento.CronogramaFaturaCicloFaturamentoParametroDTO;
+import moduloFaturamento.dto.cronogramaFaturaCicloFaturamento.projection.CronogramaFaturaCicloFaturamentoDetalheRespostaProjectionDTO;
+import moduloFaturamento.dto.cronogramaFaturaCicloFaturamento.projection.CronogramaFaturaCicloFaturamentoRespostaGridProjectionDTO;
+import moduloFaturamento.dto.cronogramaFaturaCicloFaturamento.projection.CronogramaFaturaCicloImovelRespostaProjectionDTO;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
+public interface CronogramaFaturamentoCicloService {
+
+    CronogramaFaturaCicloFaturamentoParametroDTO buscarParametroProcessamentoMensal();
+    GenericoWrapperDTO<List<CronogramaFaturaCicloFaturamentoRespostaGridProjectionDTO>> buscarCronogramaPorFiltro(CronogramaFaturaCicloFaturamentoFilterDTO filter, Pageable pageable);
+    CronogramaFaturaCicloFaturamentoDetalheRespostaProjectionDTO buscarCronogramaPorId(Long id);
+    List<CronogramaFaturaCicloImovelRespostaProjectionDTO> buscarMatriculasDasFaturasDeUmaFaseDoCronograma(Long idCronograma, List<Short> fase);
+}

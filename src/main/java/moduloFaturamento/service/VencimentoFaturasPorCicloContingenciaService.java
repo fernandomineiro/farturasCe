@@ -1,0 +1,21 @@
+package moduloFaturamento.service;
+
+import java.util.List;
+
+import moduloFaturamento.dto.cronogramaFatura.CronogramaFaturaCicloDropDownDTO;
+import moduloFaturamento.dto.cronogramaFatura.CronogramaFaturaFaseDTO;
+import moduloFaturamento.dto.vencimentoFaturasPorCicloContingencia.FaturasVencimentoAlterarFilterDTO;
+import moduloFaturamento.dto.vencimentoFaturasPorCicloContingencia.FaturasVencimentoAlterarResumoRespostaDTO;
+import moduloFaturamento.dto.vencimentoFaturasPorCicloContingencia.FaturasVencimentoVerificarFilterDTO;
+import moduloFaturamento.dto.vencimentoFaturasPorCicloContingencia.FaturasVencimentoVerificarResumoRespostaDTO;
+
+public interface VencimentoFaturasPorCicloContingenciaService {
+
+	List<CronogramaFaturaCicloDropDownDTO> buscarDropDownCiclo(Short cdCidade, Integer referencia);
+
+	List<CronogramaFaturaFaseDTO> buscarFasesEmitirFaturaEEncerrado();
+
+	FaturasVencimentoVerificarResumoRespostaDTO verificarVencimentosParaAlterarEmLote(FaturasVencimentoVerificarFilterDTO dto);
+
+	FaturasVencimentoAlterarResumoRespostaDTO executarFluxoAlterarVencimentosEmLote(FaturasVencimentoAlterarFilterDTO dto, String token);
+}

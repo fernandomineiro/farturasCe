@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  nscfaturas:
+    image: "${IMAGE_TAG}"
+    environment:
+      - TZ=America/Sao_Paulo
+    env_file:
+      - app.env
+    networks:
+      - nsc-backend-net
+    restart: always
+
+networks:
+  nsc-backend-net:
+    external:
+      name: nsc-backend-net

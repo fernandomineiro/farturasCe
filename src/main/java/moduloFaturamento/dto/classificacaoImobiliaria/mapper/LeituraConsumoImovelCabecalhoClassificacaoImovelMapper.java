@@ -1,0 +1,11 @@
+package moduloFaturamento.dto.classificacaoImobiliaria.mapper;
+
+import moduloFaturamento.dto.classificacaoImobiliaria.LeituraConsumoImovelCabecalhoClassificacaoImovelDTO;
+import moduloFaturamento.mapper.definition.ProjectionDtoMapper;
+import moduloFaturamento.model.common.ClassificacaoImobiliaria;
+import org.mapstruct.Mapper;
+
+@Mapper(componentModel = "spring")
+public interface LeituraConsumoImovelCabecalhoClassificacaoImovelMapper extends ProjectionDtoMapper<LeituraConsumoImovelCabecalhoClassificacaoImovelDTO, ClassificacaoImobiliaria> {
+
+}

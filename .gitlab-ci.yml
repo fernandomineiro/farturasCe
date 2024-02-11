@@ -1,0 +1,114 @@
+image: registry.sistemas.cesan.com.br/ops/docker/compose:debian-1.29.2
+
+before_script:
+    - |
+      echo "$DOCKER_REGISTRY_PASS" | \
+      docker login $DOCKER_REGISTRY_HOST \
+      --username $DOCKER_REGISTRY_USER --password-stdin
+
+stages:
+  - setup
+  - build
+  - deploy
+
+setup:
+  stage: setup
+  script:
+    - BUILD_TIMESTAMP=$(date '+%Y%m%dT%H%M%S')
+    - APP_NAME="$(grep -oPm1 '(?<=<name>)[^<]+' pom.xml)"
+    - APP_VERSION="$(grep -oPm1 '(?<=<version>)[^<]+' pom.xml)"
+    - APP_JAR="${APP_NAME}-${APP_VERSION}.jar"
+    - IMAGE_TAG_BASE=registry.sistemas.cesan.com.br/com/nsc/back-end/faturas
+    - echo "APP_JAR=${APP_JAR}" >> setup.env
+    - echo "IMAGE_STAGING_TAG=${IMAGE_TAG_BASE}:${APP_VERSION}-${BUILD_TIMESTAMP}" >> setup.env
+    - echo "IMAGE_PRODUCTION_TAG=${IMAGE_TAG_BASE}:${APP_VERSION}-${BUILD_TIMESTAMP}" >> setup.env
+  only:
+    - staging
+    - master
+  artifacts:
+    reports:
+      dotenv: setup.env
+
+build_staging:
+  stage: build
+  script:
+    - |
+      docker image build \
+      --build-arg APP_JAR="${APP_JAR}" \
+      --build-arg HTTP_PROXY_HOST="$HTTP_PROXY_HOST" \
+      --build-arg HTTP_PROXY_PORT="$HTTP_PROXY_PORT" \
+      --network "$HTTP_PROXY_NET" \
+      -t "${IMAGE_STAGING_TAG}" -f docker/Dockerfile .
+    - docker image push "${IMAGE_STAGING_TAG}"
+    - docker image rm "${IMAGE_STAGING_TAG}"
+  dependencies:
+    - setup
+  only:
+    - staging
+
+deploy_staging:
+  stage: deploy
+  variables:
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "/cert/com/dwh1"
+    DOCKER_HOST: "dwh1.sistemas.cesan.com.br:2376"
+  script:
+    - |
+      IMAGE_TAG="${IMAGE_STAGING_TAG}" \
+      docker-compose \
+      -f docker/docker-compose.yml \
+      -f docker/docker-compose.hom.yml pull
+    - |
+      IMAGE_TAG="${IMAGE_STAGING_TAG}" docker-compose \
+      -f docker/docker-compose.yml \
+      -f docker/docker-compose.hom.yml \
+      --project-name nsc-backend up -d --force-recreate
+  dependencies:
+    - setup
+  environment:
+    name: staging
+  only:
+    - staging
+
+build_production:
+  stage: build
+  script:
+    - |
+      docker image build \
+      --build-arg APP_JAR="${APP_JAR}" \
+      --build-arg HTTP_PROXY_HOST="$HTTP_PROXY_HOST" \
+      --build-arg HTTP_PROXY_PORT="$HTTP_PROXY_PORT" \
+      --network "$HTTP_PROXY_NET" \
+      -t "${IMAGE_PRODUCTION_TAG}" -f docker/Dockerfile .
+    - docker image push "${IMAGE_PRODUCTION_TAG}"
+    - docker image rm "${IMAGE_PRODUCTION_TAG}"
+  dependencies:
+    - setup
+  only:
+    - master
+
+deploy_production:
+  stage: deploy
+  variables:
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "/cert/com/dwp1"
+    DOCKER_HOST: "dwp1.sistemas.cesan.com.br:2376"
+  script:
+    - |
+      IMAGE_TAG="${IMAGE_PRODUCTION_TAG}" \
+      docker-compose \
+      -f docker/docker-compose.yml \
+      -f docker/docker-compose.prd.yml pull
+    - |
+      IMAGE_TAG="${IMAGE_PRODUCTION_TAG}" docker-compose \
+      -f docker/docker-compose.yml \
+      -f docker/docker-compose.prd.yml \
+      --project-name nsc-backend up -d --force-recreate
+  dependencies:
+    - setup
+  when: manual
+  allow_failure: false
+  environment:
+    name: production
+  only:
+    - master
